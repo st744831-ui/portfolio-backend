@@ -91,8 +91,7 @@ const sanitize = (s, max = 2000) =>
 // =====================================================================
 //  PUBLIC: submit an access request  (STEP 2, 3, 4)
 // =====================================================================
-app.post('/api/access-request', submitLimiter, doubleCsrfProtection, async (req, res) => {
-  const b = req.body || {};
+app.post('/api/access-request', submitLimiter, async (req, res) => {  const b = req.body || {};
   const fullName = sanitize(b.fullName, 120);
   const companyName = sanitize(b.companyName, 160);
   const email = String(b.email ?? '').trim().toLowerCase();

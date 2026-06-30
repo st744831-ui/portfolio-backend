@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Portfolio Admin</title>
+  <style>
+    :root{
+      --bg:#0c0d11; --panel:#14161d; --panel2:#191c24; --line:#262a34;
+      --text:#e9ebf1; --muted:#8b909c; --lime:#c6f24e; --red:#ff6b6b;
+      --amber:#ffc857; --green:#5fd38a; --blue:#6aa6ff; --radius:14px;
+    }
+    *{box-sizing:border-box} html,body{margin:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+      background:radial-gradient(1200px 600px at 80% -10%,#1a1d27 0%,var(--bg) 55%);color:var(--text);min-height:100vh}
+    a{color:var(--lime)} button{font-family:inherit;cursor:pointer}
+    .hidden{display:none!important}
+
+    /* Login */
+    .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+    .login-card{width:100%;max-width:380px;background:var(--panel);border:1px solid var(--line);
+      border-radius:var(--radius);padding:32px;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+    .login-card h1{font-size:20px;margin:0 0 4px}
+    .login-card p{color:var(--muted);font-size:13px;margin:0 0 22px}
+
+    label{display:block;font-size:12px;color:var(--muted);margin:14px 0 6px}
+    input,select{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--text);
+      padding:11px 13px;border-radius:10px;font-size:14px;outline:none;transition:border-color .15s}
+    input:focus,select:focus{border-color:var(--lime)}
+    .btn{background:var(--lime);color:#0e0f13;border:none;padding:11px 18px;border-radius:10px;
+      font-weight:700;font-size:14px;transition:transform .1s,filter .15s}
+    .btn:hover{filter:brightness(1.05)} .btn:active{transform:translateY(1px)}
+    .btn--ghost{background:transparent;border:1px solid var(--line);color:var(--text)}
+    .btn--danger{background:var(--red);color:#1a0000}
+    .btn--sm{padding:7px 12px;font-size:12.5px;border-radius:8px}
+    .err{color:var(--red);font-size:13px;margin-top:12px;min-height:18px}
+
+    /* App shell */
+    .shell{max-width:1180px;margin:0 auto;padding:24px}
+    .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+    .brand{font-weight:800;letter-spacing:.3px}
+    .brand span{color:var(--lime)}
+
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+    .stat{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+    .stat .n{font-size:30px;font-weight:800;line-height:1}
+    .stat .l{color:var(--muted);font-size:12.5px;margin-top:6px}
+    .stat.p .n{color:var(--amber)} .stat.a .n{color:var(--green)}
+    .stat.r .n{color:var(--red)} .stat.t .n{color:var(--blue)}
+
+    .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+    .controls input{max-width:280px} .controls select{max-width:170px}
+    .spacer{flex:1}
+
+    .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+    table{width:100%;border-collapse:collapse}
+    th,td{text-align:left;padding:13px 16px;font-size:13.5px;border-bottom:1px solid var(--line);vertical-align:top}
+    th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.4px}
+    tr:last-child td{border-bottom:none}
+    tr:hover td{background:rgba(255,255,255,.02)}
+    .pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:700;text-transform:capitalize}
+    .pill.pending{background:rgba(255,200,87,.15);color:var(--amber)}
+    .pill.approved{background:rgba(95,211,138,.15);color:var(--green)}
+    .pill.rejected{background:rgba(255,107,107,.15);color:var(--red)}
+    .rowbtns{display:flex;gap:6px;flex-wrap:wrap}
+    .muted{color:var(--muted)}
+    .empty{padding:40px;text-align:center;color:var(--muted)}
+
+    .pager{display:flex;align-items:center;gap:12px;justify-content:flex-end;padding:14px 16px}
+    .pager button{background:var(--panel2);border:1px solid var(--line);color:var(--text);
+      border-radius:8px;padding:7px 12px;font-size:13px}
+    .pager button:disabled{opacity:.4;cursor:not-allowed}
+
+    /* skeleton */
+    .sk{display:inline-block;height:12px;border-radius:6px;background:linear-gradient(90deg,#1c1f28,#262a34,#1c1f28);
+      background-size:200% 100%;animation:sh 1.2s infinite}
+    @keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+    /* detail modal */
+    .ov{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);
+      display:flex;align-items:center;justify-content:center;padding:20px;z-index:50}
+    .modal{width:100%;max-width:520px;background:var(--panel);border:1px solid var(--line);
+      border-radius:var(--radius);padding:26px;max-height:88vh;overflow:auto}
+    .modal h2{margin:0 0 16px;font-size:18px}
+    .kv{display:grid;grid-template-columns:130px 1fr;gap:8px 14px;font-size:14px}
+    .kv .k{color:var(--muted)}
+    .modal-actions{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap}
+
+    @media(max-width:760px){
+      .stats{grid-template-columns:repeat(2,1fr)}
+      .hide-sm{display:none}
+    }
+  </style>
+</head>
+<body>
+  <!-- LOGIN -->
+  <div id="login" class="login-wrap">
+    <div class="login-card">
+      <h1>Admin Access</h1>
+      <p>Sign in to manage portfolio access requests.</p>
+      <label for="email">Email</label>
+      <input id="email" type="email" autocomplete="username" />
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" />
+      <div style="margin-top:20px"><button class="btn" style="width:100%" id="loginBtn">Sign In</button></div>
+      <div class="err" id="loginErr"></div>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="shell hidden">
+    <div class="top">
+      <div class="brand">Creative <span>Shivam</span> — Access Admin</div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn--ghost btn--sm" id="csvBtn">Export CSV</button>
+        <button class="btn btn--ghost btn--sm" id="xlsxBtn">Export Excel</button>
+        <button class="btn btn--ghost btn--sm" id="logoutBtn">Logout</button>
+      </div>
+    </div>
+
+    <div class="stats" id="stats">
+      <div class="stat p"><div class="n" id="sPending">—</div><div class="l">Pending</div></div>
+      <div class="stat a"><div class="n" id="sApproved">—</div><div class="l">Approved</div></div>
+      <div class="stat r"><div class="n" id="sRejected">—</div><div class="l">Rejected</div></div>
+      <div class="stat t"><div class="n" id="sTotal">—</div><div class="l">Total Requests</div></div>
+    </div>
+
+    <div class="controls">
+      <input id="search" placeholder="Search by name, email or company…" />
+      <select id="statusFilter">
+        <option value="all">All statuses</option>
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+      </select>
+      <div class="spacer"></div>
+    </div>
+
+    <div class="panel">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th><th>Company</th><th>Email</th>
+            <th class="hide-sm">Created</th><th>Status</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="pager">
+        <span class="muted" id="pageInfo"></span>
+        <button id="prevBtn">‹ Prev</button>
+        <button id="nextBtn">Next ›</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalRoot"></div>
+
+  <script>
+    // API base = same origin this dashboard is served from.
+    const API = '';
+    let state = { page:1, pageSize:10, search:'', status:'all', token:null };
+
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s ?? '').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+    async function api(path, opts={}){
+      const headers = Object.assign({'Content-Type':'application/json'}, opts.headers||{});
+      if(state.token) headers['Authorization'] = 'Bearer '+state.token;
+      const res = await fetch(API+path, Object.assign({credentials:'include'}, opts, {headers}));
+      if(res.status===401){ showLogin(); throw new Error('unauthorized'); }
+      return res;
+    }
+
+    // ---- Auth ----
+    function showLogin(){ $('app').classList.add('hidden'); $('login').classList.remove('hidden'); }
+    function showApp(){ $('login').classList.add('hidden'); $('app').classList.remove('hidden'); refresh(); }
+
+    $('loginBtn').onclick = async () => {
+      $('loginErr').textContent='';
+      const email=$('email').value.trim(), password=$('password').value;
+      try{
+        const res=await fetch(API+'/api/admin/login',{method:'POST',credentials:'include',
+          headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+        const data=await res.json();
+        if(!res.ok||!data.ok){ $('loginErr').textContent=data.error||'Login failed'; return; }
+        state.token=data.token; showApp();
+      }catch(e){ $('loginErr').textContent='Network error'; }
+    };
+    $('password').addEventListener('keydown',e=>{ if(e.key==='Enter') $('loginBtn').click(); });
+
+    $('logoutBtn').onclick = async () => {
+      await fetch(API+'/api/admin/logout',{method:'POST',credentials:'include'});
+      state.token=null; showLogin();
+    };
+
+    // ---- Data ----
+    async function loadStats(){
+      try{
+        const res=await api('/api/admin/stats'); const d=await res.json();
+        $('sPending').textContent=d.stats.pending;
+        $('sApproved').textContent=d.stats.approved;
+        $('sRejected').textContent=d.stats.rejected;
+        $('sTotal').textContent=d.stats.total;
+      }catch(_){}
+    }
+
+    function skeletonRows(n=5){
+      let h='';
+      for(let i=0;i<n;i++) h+=`<tr>${'<td><span class="sk" style="width:'+(60+Math.random()*60)+'px"></span></td>'.repeat(6)}</tr>`;
+      $('tbody').innerHTML=h;
+    }
+
+    async function loadRequests(){
+      skeletonRows();
+      const q=new URLSearchParams({page:state.page,pageSize:state.pageSize,
+        search:state.search,status:state.status});
+      try{
+        const res=await api('/api/admin/requests?'+q); const d=await res.json();
+        renderRows(d.rows); 
+        $('pageInfo').textContent=`Page ${d.page} of ${d.pages} · ${d.total} total`;
+        $('prevBtn').disabled=d.page<=1; $('nextBtn').disabled=d.page>=d.pages;
+        state._pages=d.pages;
+      }catch(_){}
+    }
+
+    function renderRows(rows){
+      if(!rows.length){ $('tbody').innerHTML=`<tr><td colspan="6"><div class="empty">No requests found.</div></td></tr>`; return; }
+      $('tbody').innerHTML=rows.map(r=>`
+        <tr>
+          <td>${esc(r.fullName)}</td>
+          <td>${esc(r.companyName)}</td>
+          <td>${esc(r.email)}</td>
+          <td class="hide-sm muted">${new Date(r.createdAt).toLocaleDateString()}</td>
+          <td><span class="pill ${r.status}">${r.status}</span></td>
+          <td>
+            <div class="rowbtns">
+              <button class="btn btn--ghost btn--sm" onclick="viewReq(${r.id})">View</button>
+              ${r.status!=='approved'?`<button class="btn btn--sm" onclick="act(${r.id},'approve')">Approve</button>`:''}
+              ${r.status!=='rejected'?`<button class="btn btn--ghost btn--sm" onclick="act(${r.id},'reject')">Reject</button>`:''}
+              <button class="btn btn--danger btn--sm" onclick="del(${r.id})">Delete</button>
+            </div>
+          </td>
+        </tr>`).join('');
+    }
+
+    window.act = async (id,action) => {
+      await api(`/api/admin/requests/${id}/${action}`,{method:'POST'});
+      refresh();
+    };
+    window.del = async (id) => {
+      if(!confirm('Delete this request permanently?')) return;
+      await api(`/api/admin/requests/${id}`,{method:'DELETE'}); refresh();
+    };
+    window.viewReq = async (id) => {
+      const res=await api(`/api/admin/requests/${id}`); const {request:r}=await res.json();
+      const row=(k,v)=>`<div class="k">${k}</div><div>${esc(v||'—')}</div>`;
+      $('modalRoot').innerHTML=`
+        <div class="ov" onclick="if(event.target===this)closeModal()">
+          <div class="modal">
+            <h2>Request #${r.id}</h2>
+            <div class="kv">
+              ${row('Full Name',r.fullName)}
+              ${row('Company',r.companyName)}
+              ${row('Email',r.email)}
+              ${row('Phone',r.phone)}
+              ${row('Message',r.message)}
+              ${row('Status',r.status)}
+              ${row('IP',r.ip)}
+              ${row('Country',r.country)}
+              ${row('Device',r.userAgent)}
+              ${row('Created',new Date(r.createdAt).toLocaleString())}
+              ${row('Approved',r.approvedAt?new Date(r.approvedAt).toLocaleString():'—')}
+              ${row('Last Activity',r.lastActivity?new Date(r.lastActivity).toLocaleString():'—')}
+            </div>
+            <div class="modal-actions">
+              ${r.status!=='approved'?`<button class="btn" onclick="act(${r.id},'approve');closeModal()">Approve</button>`:''}
+              ${r.status!=='rejected'?`<button class="btn btn--ghost" onclick="act(${r.id},'reject');closeModal()">Reject</button>`:''}
+              <button class="btn btn--danger" onclick="del(${r.id});closeModal()">Delete</button>
+              <button class="btn btn--ghost" onclick="closeModal()">Close</button>
+            </div>
+          </div>
+        </div>`;
+    };
+    window.closeModal = () => { $('modalRoot').innerHTML=''; };
+
+    // ---- Exports ----
+    async function download(path,filename){
+      const res=await api(path);
+      const blob=await res.blob(); const url=URL.createObjectURL(blob);
+      const a=document.createElement('a'); a.href=url; a.download=filename; a.click();
+      URL.revokeObjectURL(url);
+    }
+    $('csvBtn').onclick=()=>download('/api/admin/export.csv','portfolio-access.csv');
+    $('xlsxBtn').onclick=()=>download('/api/admin/export.xlsx','portfolio-access.xlsx');
+
+    // ---- Controls ----
+    let searchTimer;
+    $('search').addEventListener('input',e=>{
+      clearTimeout(searchTimer);
+      searchTimer=setTimeout(()=>{ state.search=e.target.value.trim(); state.page=1; loadRequests(); },300);
+    });
+    $('statusFilter').addEventListener('change',e=>{ state.status=e.target.value; state.page=1; loadRequests(); });
+    $('prevBtn').onclick=()=>{ if(state.page>1){state.page--;loadRequests();} };
+    $('nextBtn').onclick=()=>{ if(state.page<state._pages){state.page++;loadRequests();} };
+
+    function refresh(){ loadStats(); loadRequests(); }
+
+    // ---- Boot: check existing session cookie ----
+    (async ()=>{
+      try{ const res=await fetch(API+'/api/admin/me',{credentials:'include'});
+        if(res.ok) showApp(); else showLogin();
+      }catch(_){ showLogin(); }
+    })();
+  </script>
+</body>
+</html>

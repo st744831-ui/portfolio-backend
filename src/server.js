@@ -76,7 +76,7 @@ const { generateToken, doubleCsrfProtection } = doubleCsrf({
   // client IP (the cookie value changes once it's set, which would break it).
   getSessionIdentifier: (req) => req.ip || 'anon',
   cookieName: config.isProd ? '__Host-pa.csrf' : 'pa.csrf',
-  cookieOptions: { sameSite: 'lax', secure: config.isProd, path: '/' },
+  cookieOptions: { sameSite: config.isProd ? 'none' : 'lax', secure: config.isProd, path: '/' },
   getCsrfTokenFromRequest: (req) => req.headers['x-csrf-token'],
 });
 

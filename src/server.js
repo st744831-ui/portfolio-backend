@@ -82,7 +82,7 @@ const { generateToken, doubleCsrfProtection } = doubleCsrf({
 
 // Hand out a CSRF token to the frontend before it submits the form.
 app.get('/api/csrf', (req, res) => {
-  res.json({ csrfToken: generateToken(req, res) });
+  res.json({ csrfToken: generateToken(req, res, true) });
 });
 
 const sanitize = (s, max = 2000) =>
@@ -101,7 +101,7 @@ app.post('/api/access-request', submitLimiter, async (req, res) => {  const b = 
   // ---- Server-side validation (never trust the frontend) ----
   const errors = {};
   if (!fullName) errors.fullName = 'Full name is required.';
-  if (!companyName) errors.companyName = 'Company name is required.';
+  // if (!companyName) errors.companyName = 'Company name is required.';
   if (!email || !validator.isEmail(email)) errors.email = 'A valid business email is required.';
   if (phone && !validator.isMobilePhone(phone, 'any', { strictMode: false }) && phone.length < 6)
     errors.phone = 'Phone number looks invalid.';
